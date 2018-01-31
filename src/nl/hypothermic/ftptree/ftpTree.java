@@ -37,7 +37,7 @@ public class ftpTree {
 					ftpTree window = new ftpTree(".", "address", 21, "username", "password");
 					window.frame.setVisible(true);
 				} catch (Exception e) {
-					e.printStackTrace();
+					e.printStackTrace(); System.exit(1);
 				}
 			}
 		});
@@ -66,7 +66,7 @@ public class ftpTree {
 	}
 
 	private void initialize() {
-		frame = new JFrame();
+		frame = new JFrame(usr + "@" + server);
 		frame.setBounds(100, 100, 450, 300);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
@@ -81,14 +81,18 @@ public class ftpTree {
 		fstree.addTreeSelectionListener(new TreeSelectionListener() {
 		    public void valueChanged(TreeSelectionEvent e) {
 		        DefaultMutableTreeNode node = (DefaultMutableTreeNode) e.getPath().getLastPathComponent();
-		        System.out.println("You selected " + node);
 		    }
 		});
 	}
 	
 	private DefaultMutableTreeNode addFTPNodes(DefaultMutableTreeNode parent, String cpath) {
 		/** FTP */
-		DefaultMutableTreeNode cdir = new DefaultMutableTreeNode(cpath + " (dir)");
+		DefaultMutableTreeNode cdir;
+		if (cpath == curRd) {
+			cdir = new DefaultMutableTreeNode("> " + usr + "@" + server + ": " + cpath);
+		} else {
+			cdir = new DefaultMutableTreeNode(cpath + " (dir)");
+		}
 		if (parent != null) { parent.add(cdir); }
 		FTPFile[] fl = null;
 		try {
@@ -104,34 +108,29 @@ public class ftpTree {
 		for (int i = 0; i < fl.length; i++) {
 			xs.add(fl[i].getName());
 		}
-		System.out.println("Listed " + x.size() + " files: " + xs);
 		Vector<String> rs = new Vector<String>();
 		for (FTPFile f : x) {
 			if (f.isDirectory() && cpath.equals(".")) {
 				// first launch: scan main dir
-				System.out.println("DEBUG 1!!");
 				addFTPNodes(cdir, f.getName());
 			} else if (f.isDirectory() && !cpath.equals(".")) {
 				// scan sub dir
-				System.out.println("DEBUG 2!!, scanning: " + (cpath + File.separator + f.getName()));
 				addFTPNodes(cdir, (cpath + File.separator + f.getName()));
 			} else if (f.isFile()) {
-	    		System.out.println("Adding file: " + f.getName());
-	    	    rs.addElement(f.getName()); // Recursive files
-	    	    System.out.println("DEBUG 3!!");
+				// "normal" file
+	    	    rs.addElement(f.getName());
 	    	} else if (f.isSymbolicLink()) {
-	    		System.out.println("Adding symlink: " + f.getName());
-	    	    rs.addElement(f.getName() + " (sym)"); // Recursive files
-	    	    System.out.println("DEBUG 4!!");
+	    		// linux symlink
+	    	    rs.addElement(f.getName() + " (sym)");
 	    	} else {
-	    		System.out.println("Could not identify file: " + f.getName());
+	    		// unidentified file
+	    	    rs.addElement(f.getName() + " (unknown)");
 	    	}
 		}
 		if (rs.size() == 0) {
 			cdir.add(new DefaultMutableTreeNode("< no files >"));
 		} else {
 			for (int fnum = 0; fnum < rs.size(); fnum++) {
-	    		System.out.println("Adding file: " + rs.elementAt(fnum));
 	    		cdir.add(new DefaultMutableTreeNode(rs.elementAt(fnum)));
 	    }}
 		return cdir; // temp 2 avoid err
