@@ -20,7 +20,7 @@ import org.apache.commons.net.ftp.FTPFile;
 
 public class ftpTree {
 	
-	/** FtpTree - Create JTree from Ftp File List. Requires Apache Commons.
+	/** FtpTree - Create JTree from Ftp File List. Requires Apache Commons Net.
 	 * @class ftpTree.java
 	 * @author hypothermic
 	 * @version v1.0
